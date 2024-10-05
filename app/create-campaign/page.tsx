@@ -16,6 +16,7 @@ import {
 } from "../../config/abi";
 import { parseUnits } from "viem";
 import { sepolia } from "viem/chains";
+import { waitForTransactionReceipt } from "viem/actions";
 
 export default function CreateCampaignPage() {
   const [campaignName, setCampaignName] = useState<string>("");
@@ -25,7 +26,6 @@ export default function CreateCampaignPage() {
   const [campaignTwitter, setCampaignTwitter] = useState<string>("");
   const [campaignFarcaster, setCampaignFarcaster] = useState<string>("");
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient();
@@ -37,63 +37,37 @@ export default function CreateCampaignPage() {
     console.log({ walletClient });
     if (!address || !walletClient) return;
 
-    setIsLoading(true);
     setErrorMessage(null); // Reset error message
-    try {
-      if (chainId !== sepolia.id) {
-        await switchChainAsync({ chainId: sepolia.id });
-      }
-
-      const campaignMetadata = {
-        name: campaignName,
-        description: campaignDescription,
-        github: campaignGithub,
-        twitter: campaignTwitter,
-        farcaster: campaignFarcaster,
-      };
-
-      // Upload metadata to Supabase
-      const uploadResponse = await fetch("/api/upload", {
-        method: "POST",
-        body: JSON.stringify(campaignMetadata),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error("Failed to upload campaign metadata");
-      }
-
-      const { campaignURI } = await uploadResponse.json();
-
-      // Ensure the campaign URI is returned
-      if (!campaignURI) {
-        throw new Error("Invalid response from the server");
-      }
-
-      // Send transaction to blockchain
-      const txHash = await walletClient?.writeContract({
-        abi: CAMPAIGN_FACTORY_ABI,
-        functionName: "createCp",
-        address: CAMPAIGN_FACTORY_ADDRESS,
-        args: [address, campaignURI],
-      });
-
-      console.log("Tx Hash", txHash);
-
-      // Wait for the transaction to be confirmed
-      const txReceipt = await publicClient?.waitForTransactionReceipt({
-        hash: txHash,
-      });
-
-      console.log("Tx Receipt", txReceipt);
-    } catch (error) {
-      console.error("Error creating campaign:", error);
-      setErrorMessage("Failed to create campaign. Please try again.");
-    } finally {
-      setIsLoading(false);
+    console.log(chainId);
+    if (chainId !== sepolia.id) {
+      await switchChainAsync({ chainId: sepolia.id });
     }
+
+    const campaignMetadata = {
+      name: campaignName,
+      description: campaignDescription,
+      github: campaignGithub,
+      twitter: campaignTwitter,
+      farcaster: campaignFarcaster,
+    };
+    console.log("abi", CAMPAIGN_FACTORY_ABI);
+    console.log("address", CAMPAIGN_FACTORY_ADDRESS);
+    console.log("args", [address, campaignMetadata]);
+
+    // Send transaction to blockchain
+    const txHash = await walletClient?.writeContract({
+      abi: CAMPAIGN_FACTORY_ABI,
+      functionName: "createCp",
+      address: CAMPAIGN_FACTORY_ADDRESS,
+      args: [address, campaignMetadata],
+    });
+    console.log("Tx Hash", txHash);
+
+    const txReceipt = await publicClient?.waitForTransactionReceipt({
+      hash: txHash,
+    });
+
+    console.log("Tx Receipt", txReceipt);
   };
 
   return (
@@ -149,10 +123,9 @@ export default function CreateCampaignPage() {
         onClick={() => createCampaign()}
         color="primary"
         className="max-w-xs w-full"
-        disabled={!address || isLoading} // Disable button if no wallet or loading
-        isLoading={isLoading} // Show loading state
+        disabled={!address}
       >
-        {isLoading ? "Creating..." : "Create"}
+        Create Campaign
       </Button>
     </section>
   );

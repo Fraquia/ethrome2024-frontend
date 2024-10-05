@@ -19,7 +19,7 @@ export default function AppNavbar() {
   return (
     <Navbar>
       <NavbarBrand as={Link} href="/">
-        <p className="font-bold text-inherit">ThreeStarter</p>
+        <p className="font-bold text-inherit">Diocane</p>
       </NavbarBrand>
       <NavbarContent justify="end">
         <NavbarItem>
