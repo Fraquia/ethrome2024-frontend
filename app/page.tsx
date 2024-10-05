@@ -43,7 +43,7 @@ export default function Home() {
               color="primary"
               as={Link}
               href={`/campaigns/${event.args.cpAddress}`}
-              // onClick={() => donate(event.args.cpAddress)}
+              onClick={() => donate(event.args.cpAddress)}
             >
               Check out
             </Button>

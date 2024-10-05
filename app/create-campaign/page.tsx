@@ -43,13 +43,13 @@ export default function CreateCampaignPage() {
       await switchChainAsync({ chainId: sepolia.id });
     }
 
-    const campaignMetadata = {
+    const campaignMetadata = JSON.stringify({
       name: campaignName,
       description: campaignDescription,
       github: campaignGithub,
       twitter: campaignTwitter,
       farcaster: campaignFarcaster,
-    };
+    });
     console.log("abi", CAMPAIGN_FACTORY_ABI);
     console.log("address", CAMPAIGN_FACTORY_ADDRESS);
     console.log("args", [address, campaignMetadata]);
