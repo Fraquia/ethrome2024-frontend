@@ -18,7 +18,7 @@ export default function AppNavbar() {
 
   return (
     <Navbar>
-      <NavbarBrand>
+      <NavbarBrand as={Link} href="/">
         <p className="font-bold text-inherit">ThreeStarter</p>
       </NavbarBrand>
       <NavbarContent justify="end">
@@ -31,7 +31,7 @@ export default function AppNavbar() {
               href="/create-campaign"
               //   onClick={() => connect({ connector: injected() })}
             >
-              {shortenAddress(address)}
+              Create Campaign
             </Button>
           ) : (
             <Button
